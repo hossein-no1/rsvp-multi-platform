@@ -1,0 +1,243 @@
+package com.util.rsvp.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.FastForward
+import androidx.compose.material.icons.rounded.FastRewind
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+
+@Composable
+fun Footer(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight(.30F),
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 48.dp)
+                    .background(
+                        color = Color(0XFF111111),
+                        shape = RoundedCornerShape(size = 32.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFF1F1F1F),
+                        shape = RoundedCornerShape(size = 32.dp)
+                    )
+                    .padding(vertical = 16.dp, horizontal = 32.dp),
+                content = {
+                    TimeLine(modifier = modifier.weight(weight = .2F))
+                    Actions(modifier = modifier.weight(weight = .6F))
+                    Controller(modifier = Modifier.weight(weight = .2F))
+                }
+            )
+        }
+    )
+}
+
+@Composable
+private fun TimeLine(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.TopCenter,
+        content = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Top,
+                content = {
+                    SeekBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        current = 32,
+                        duration = 100,
+                        onSeek = {})
+                    TimeInformation()
+                }
+            )
+        }
+    )
+}
+
+@Composable
+private fun SeekBar(
+    modifier: Modifier = Modifier,
+    current: Long,
+    duration: Long,
+    onSeek: (Long) -> Unit
+) {
+
+    val progress = if (duration > 0) {
+        current.toFloat() / duration.toFloat()
+    } else 0f
+
+    Slider(
+        modifier = modifier,
+        value = progress,
+        onValueChange = {
+            val newPosition = (it * duration).toLong()
+            onSeek(newPosition)
+        },
+        valueRange = 0f..1f
+    )
+}
+
+@Composable
+private fun TimeInformation(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        content = {
+            TimeLabel(modifier = Modifier.align(alignment = Alignment.CenterStart), text = "1/418")
+            TimeLabel(modifier = Modifier.align(alignment = Alignment.CenterEnd), text = "0%")
+        }
+    )
+}
+
+@Composable
+private fun TimeLabel(modifier: Modifier = Modifier, text: String) {
+    Text(
+        modifier = modifier,
+        text = text,
+        color = Color(0xFF353535),
+        fontSize = 14.sp
+    )
+}
+
+@Composable
+private fun Actions(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+        content = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = 32.dp,
+                    alignment = Alignment.CenterHorizontally
+                ),
+                verticalAlignment = Alignment.CenterVertically,
+                content = {
+                    Icon(
+                        modifier = Modifier.size(size = 32.dp),
+                        imageVector = Icons.Rounded.FastRewind,
+                        tint = Color(color = 0XFF616161),
+                        contentDescription = ""
+                    )
+
+                    Icon(
+                        modifier = Modifier.size(size = 32.dp),
+                        imageVector = Icons.Rounded.PlayArrow,
+                        tint = Color(color = 0XFFC71D25),
+                        contentDescription = ""
+                    )
+
+                    Icon(
+                        modifier = Modifier.size(size = 32.dp),
+                        imageVector = Icons.Rounded.FastForward,
+                        tint = Color(color = 0XFF616161),
+                        contentDescription = ""
+                    )
+                }
+            )
+        }
+    )
+}
+
+@Composable
+private fun Controller(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+        content = {
+            Icon(
+                modifier = Modifier
+                    .size(size = 24.dp)
+                    .align(alignment = Alignment.CenterStart),
+                imageVector = Icons.Rounded.Tune,
+                tint = Color(color = 0XFF616161),
+                contentDescription = ""
+            )
+            Metronome()
+        }
+    )
+}
+
+@Composable
+private fun Metronome(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 12.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        verticalAlignment = Alignment.CenterVertically,
+        content = {
+            Icon(
+                modifier = Modifier.size(size = 24.dp),
+                imageVector = Icons.Rounded.Remove,
+                tint = Color(color = 0XFF616161),
+                contentDescription = ""
+            )
+            MetronomeLabel(text = "450")
+            Icon(
+                modifier = Modifier.size(size = 24.dp),
+                imageVector = Icons.Rounded.Add,
+                tint = Color(color = 0XFF616161),
+                contentDescription = ""
+            )
+        }
+    )
+}
+
+@Composable
+private fun MetronomeLabel(modifier: Modifier = Modifier, text: String) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 6.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        content = {
+            Text(
+                text = text,
+                fontSize = 16.sp,
+                color = Color.White
+            )
+
+            Text(
+                text = "WPM",
+                fontSize = 14.sp,
+                color = Color(color = 0XFF616161)
+            )
+        }
+    )
+}
