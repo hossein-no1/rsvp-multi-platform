@@ -42,7 +42,7 @@ class HomeState internal constructor(
         offset = newOffset.coerceIn(0, (count - 1).coerceAtLeast(0))
     }
 
-    fun setPlay(newValue: Boolean) {
+    fun setIsPlay(newValue: Boolean) {
         isPlay = newValue
     }
 

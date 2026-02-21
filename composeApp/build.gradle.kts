@@ -15,6 +15,12 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
+
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
     
     listOf(
         iosArm64(),
@@ -42,6 +48,11 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
         }
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+            }
+        }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -55,6 +66,18 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+    }
+}
+
+compose.desktop {
+    application {
+        mainClass = "com.util.rsvp.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "Rsvp"
+            packageVersion = "1.0.0"
         }
     }
 }

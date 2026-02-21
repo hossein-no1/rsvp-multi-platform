@@ -82,7 +82,7 @@ fun HomeScreen(
                 tempo = state.tempo,
                 isPlay = state.isPlay,
                 onSeek = state::seek,
-                onPlay = state::setPlay,
+                onPlay = state::setIsPlay,
                 onRewin = state::rewind,
                 onForward = state::forward,
                 speedUp = state::speedUp,
