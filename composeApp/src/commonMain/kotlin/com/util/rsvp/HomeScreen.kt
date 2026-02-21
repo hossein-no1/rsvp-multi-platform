@@ -1,8 +1,10 @@
 package com.util.rsvp
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import com.util.rsvp.component.Content
 import com.util.rsvp.component.Footer
 import kotlinx.coroutines.delay
@@ -66,7 +70,20 @@ fun HomeScreen(
             .background(color = MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
         content = {
-            Content(word = currentWord)
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val centerX = size.width / 2
+                val wordCenterY = ((size.height / 2) - 128)
+                drawLine(
+                    color = Color.Red,
+                    start = Offset(centerX, 0f),
+                    end = Offset(centerX, wordCenterY),
+                    strokeWidth = 2f
+                )
+            }
+            Content(
+                modifier = Modifier.fillMaxWidth(),
+                text = currentWord
+            )
             Footer(
                 modifier = Modifier.align(alignment = Alignment.BottomCenter),
                 offset = offset,
