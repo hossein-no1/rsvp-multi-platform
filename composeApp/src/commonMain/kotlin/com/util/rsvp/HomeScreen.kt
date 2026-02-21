@@ -3,6 +3,7 @@ package com.util.rsvp
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
@@ -14,8 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.util.rsvp.component.Content
 import com.util.rsvp.component.Footer
 import kotlinx.coroutines.delay
@@ -35,8 +39,8 @@ fun HomeScreen(
 
     val stack = remember {
         LOREM
-            .split(" ")
-            .map { it.trim() }
+            .trim()
+            .split(Regex("\\s+"))
     }
     var currentWord by remember { mutableStateOf(value = stack.first()) }
     var tempo by remember { mutableStateOf(value = 60L) }
@@ -61,7 +65,7 @@ fun HomeScreen(
     LaunchedEffect(key1 = offset) {
         val index = offset.coerceIn(0, count - 1).toInt()
         currentWord = stack[index]
-        progress = if (count > 0) ((offset * 100) / count) else 0
+        progress = if (count > 0) (((index + 1).toLong() * 100) / count) else 0
     }
 
     Box(
@@ -73,16 +77,44 @@ fun HomeScreen(
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val centerX = size.width / 2
                 val wordCenterY = ((size.height / 2) - 128)
+                val footerTopY = size.height * 0.7f
+                val characterGapPx = 56.dp.toPx()
+                val halfGap = characterGapPx / 2f
+
+                val topEndY = (wordCenterY - halfGap).coerceAtLeast(0f)
+                val bottomStartY = ((wordCenterY + halfGap).coerceAtMost(footerTopY) + 256)
+
                 drawLine(
                     color = Color.Red,
                     start = Offset(centerX, 0f),
-                    end = Offset(centerX, wordCenterY),
+                    end = Offset(centerX, topEndY),
+                    strokeWidth = 2f
+                )
+                drawLine(
+                    color = Color.Red,
+                    start = Offset(centerX, bottomStartY),
+                    end = Offset(centerX, footerTopY),
                     strokeWidth = 2f
                 )
             }
             Content(
                 modifier = Modifier.fillMaxWidth(),
                 text = currentWord
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.15f)
+                    .blur(72.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.background,
+                                Color(0x1A590127),
+                            )
+                        )
+                    )
             )
             Footer(
                 modifier = Modifier.align(alignment = Alignment.BottomCenter),

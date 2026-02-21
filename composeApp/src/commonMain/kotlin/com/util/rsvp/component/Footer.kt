@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -144,7 +145,11 @@ private fun SeekBar(
             val newPosition = (it * duration).toLong()
             onSeek(newPosition)
         },
-        valueRange = 0f..1f
+        valueRange = 0f..1f,
+        colors = SliderDefaults.colors(
+            thumbColor = Color.White,
+            activeTrackColor = Color(color = 0XFFC71D25),
+        )
     )
 }
 
@@ -160,7 +165,7 @@ private fun TimeInformation(
         content = {
             TimeLabel(
                 modifier = Modifier.align(alignment = Alignment.CenterStart),
-                text = "${offset}/${count}"
+                text = "${offset + 1}/${count}"
             )
             TimeLabel(
                 modifier = Modifier.align(alignment = Alignment.CenterEnd),
