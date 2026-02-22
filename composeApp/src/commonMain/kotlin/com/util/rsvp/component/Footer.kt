@@ -15,22 +15,30 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.util.rsvp.ReadingMode
 
 
 @Composable
@@ -41,6 +49,8 @@ fun Footer(
     progress: Long,
     tempo: Long,
     isPlay: Boolean,
+    readingMode: ReadingMode,
+    onReadingModeChange: (ReadingMode) -> Unit,
     onSeek: (Long) -> Unit,
     onPlay: (Boolean) -> Unit,
     onForward: () -> Unit,
@@ -85,8 +95,11 @@ fun Footer(
                     Controller(
                         modifier = Modifier.weight(weight = .2F),
                         tempo = tempo,
+                        readingMode = readingMode,
+                        onReadingModeChange = onReadingModeChange,
                         speedUp = speedUp,
-                        speedDown = speedDown)
+                        speedDown = speedDown
+                    )
                 }
             )
         }
@@ -248,20 +261,76 @@ private fun Actions(
 private fun Controller(
     modifier: Modifier = Modifier,
     tempo: Long,
+    readingMode: ReadingMode,
+    onReadingModeChange: (ReadingMode) -> Unit,
     speedUp: () -> Unit,
     speedDown: () -> Unit,
 ) {
+    var tuneMenuExpanded by remember { mutableStateOf(false) }
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
         content = {
-            Icon(
-                modifier = Modifier
-                    .size(size = 24.dp)
-                    .align(alignment = Alignment.CenterStart),
-                imageVector = Icons.Rounded.Tune,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                contentDescription = ""
+            Box(
+                modifier = Modifier.align(alignment = Alignment.CenterStart),
+                content = {
+                    Icon(
+                        modifier = Modifier
+                            .size(size = 24.dp)
+                            .clickable { tuneMenuExpanded = true },
+                        imageVector = Icons.Rounded.Tune,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        contentDescription = ""
+                    )
+
+                    DropdownMenu(
+                        expanded = tuneMenuExpanded,
+                        onDismissRequest = { tuneMenuExpanded = false },
+                        content = {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Focus",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                },
+                                onClick = {
+                                    onReadingModeChange(ReadingMode.Focus)
+                                    tuneMenuExpanded = false
+                                },
+                                trailingIcon = if (readingMode == ReadingMode.Focus) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Check,
+                                            contentDescription = null
+                                        )
+                                    }
+                                } else null,
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Guided",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                },
+                                onClick = {
+                                    onReadingModeChange(ReadingMode.Guided)
+                                    tuneMenuExpanded = false
+                                },
+                                trailingIcon = if (readingMode == ReadingMode.Guided) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Check,
+                                            contentDescription = null
+                                        )
+                                    }
+                                } else null,
+                            )
+                        }
+                    )
+                }
             )
             Metronome(
                 tempo = tempo,

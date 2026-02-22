@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import com.util.rsvp.component.Content
 import com.util.rsvp.component.Footer
+import com.util.rsvp.component.GuidedContent
 
 @Composable
 fun HomeScreen(
@@ -32,33 +33,50 @@ fun HomeScreen(
             .background(color = MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
         content = {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val centerX = size.width / 2
-                val wordCenterY = ((size.height / 2) - 128)
-                val footerTopY = size.height * 0.7f
-                val characterGapPx = 56.dp.toPx()
-                val halfGap = characterGapPx / 2f
+            when (state.readingMode) {
+                ReadingMode.Focus -> {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val centerX = size.width / 2
+                        val wordCenterY = ((size.height / 2) - 128)
+                        val footerTopY = size.height * 0.7f
+                        val characterGapPx = 56.dp.toPx()
+                        val halfGap = characterGapPx / 2f
 
-                val topEndY = (wordCenterY - halfGap).coerceAtLeast(0f)
-                val bottomStartY = ((wordCenterY + halfGap).coerceAtMost(footerTopY) + 256)
+                        val topEndY = (wordCenterY - halfGap).coerceAtLeast(0f)
+                        val bottomStartY = ((wordCenterY + halfGap).coerceAtMost(footerTopY) + 256)
 
-                drawLine(
-                    color = primaryColor,
-                    start = Offset(centerX, 0f),
-                    end = Offset(centerX, topEndY),
-                    strokeWidth = 2f
-                )
-                drawLine(
-                    color = primaryColor,
-                    start = Offset(centerX, bottomStartY),
-                    end = Offset(centerX, footerTopY),
-                    strokeWidth = 2f
-                )
+                        drawLine(
+                            color = primaryColor,
+                            start = Offset(centerX, 0f),
+                            end = Offset(centerX, topEndY),
+                            strokeWidth = 2f
+                        )
+                        drawLine(
+                            color = primaryColor,
+                            start = Offset(centerX, bottomStartY),
+                            end = Offset(centerX, footerTopY),
+                            strokeWidth = 2f
+                        )
+                    }
+
+                    Content(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = state.currentWord
+                    )
+                }
+
+                ReadingMode.Guided -> {
+                    GuidedContent(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.70f),
+                        text = state.fullText,
+                        highlightStart = state.currentWordStart,
+                        highlightEndExclusive = state.currentWordEndExclusive,
+                    )
+                }
             }
-            Content(
-                modifier = Modifier.fillMaxWidth(),
-                text = state.currentWord
-            )
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -81,6 +99,8 @@ fun HomeScreen(
                 progress = state.progress,
                 tempo = state.tempo,
                 isPlay = state.isPlay,
+                readingMode = state.readingMode,
+                onReadingModeChange = state::updateReadingMode,
                 onSeek = state::seek,
                 onPlay = state::setIsPlay,
                 onRewin = state::rewind,

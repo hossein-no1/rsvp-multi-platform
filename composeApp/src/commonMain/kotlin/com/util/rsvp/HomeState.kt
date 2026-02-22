@@ -23,7 +23,20 @@ class HomeState internal constructor(
 ) {
     val count: Long = stack.size.toLong()
 
+    val fullText: String
+
+    internal val wordStartEndExclusive: IntArray
+
+    var readingMode: ReadingMode by mutableStateOf(value = ReadingMode.Focus)
+        private set
+
     var currentWord: String by mutableStateOf(value = stack.firstOrNull().orEmpty())
+        internal set
+
+    var currentWordStart: Int by mutableStateOf(value = 0)
+        internal set
+
+    var currentWordEndExclusive: Int by mutableStateOf(value = 0)
         internal set
 
     var tempo: Long by mutableStateOf(value = 60L)
@@ -37,6 +50,31 @@ class HomeState internal constructor(
 
     var isPlay: Boolean by mutableStateOf(value = false)
         private set
+
+    init {
+        val ranges = IntArray(stack.size * 2)
+        val text = buildString {
+            stack.forEachIndexed { index, word ->
+                if (index > 0) append(' ')
+                val start = length
+                append(word)
+                val endExclusive = length
+                ranges[index * 2] = start
+                ranges[index * 2 + 1] = endExclusive
+            }
+        }
+        fullText = text
+        wordStartEndExclusive = ranges
+
+        if (stack.isNotEmpty()) {
+            currentWordStart = wordStartEndExclusive[0]
+            currentWordEndExclusive = wordStartEndExclusive[1]
+        }
+    }
+
+    fun updateReadingMode(mode: ReadingMode) {
+        readingMode = mode
+    }
 
     fun seek(newOffset: Long) {
         offset = newOffset.coerceIn(0, (count - 1).coerceAtLeast(0))
@@ -86,9 +124,14 @@ fun rememberHomeState(
     }
 
     LaunchedEffect(key1 = state.offset) {
+        if (state.count <= 0) return@LaunchedEffect
+
         val index = state.offset.coerceIn(0, state.count - 1).toInt()
         state.currentWord = state.stack[index]
         state.progress = if (state.count > 0) (((index + 1).toLong() * 100) / state.count) else 0
+
+        state.currentWordStart = state.wordStartEndExclusive[index * 2]
+        state.currentWordEndExclusive = state.wordStartEndExclusive[index * 2 + 1]
     }
 
     return state
