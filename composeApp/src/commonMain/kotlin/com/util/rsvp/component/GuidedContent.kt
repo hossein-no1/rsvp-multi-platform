@@ -95,7 +95,7 @@ fun GuidedContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 72.dp, vertical = 24.dp),
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         contentAlignment = Alignment.Center,
     ) {
         var textLayout: TextLayoutResult? by remember { mutableStateOf(null) }
