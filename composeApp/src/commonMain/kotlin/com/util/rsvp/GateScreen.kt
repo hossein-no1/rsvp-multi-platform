@@ -23,11 +23,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.util.rsvp.component.InputPDF
+import com.util.rsvp.model.PdfHistoryItem
 
 @Composable
 fun GateScreen(
     modifier: Modifier = Modifier,
     onContinue: (String) -> Unit,
+    onPdfPicked: (PdfHistoryItem) -> Unit,
 ) {
     var text by remember { mutableStateOf("") }
 
@@ -66,7 +68,10 @@ fun GateScreen(
             )
         )
 
-        InputPDF(onResult = { text = it })
+        InputPDF(
+            onPicked = onPdfPicked,
+            onResult = { text = it },
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 

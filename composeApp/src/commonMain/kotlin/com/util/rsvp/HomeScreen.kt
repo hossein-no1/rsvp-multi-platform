@@ -23,6 +23,7 @@ import com.util.rsvp.component.GuidedContent
 fun HomeScreen(
     modifier: Modifier = Modifier,
     state: HomeState,
+    onReadingModeChange: (ReadingMode) -> Unit = state::updateReadingMode,
 ) {
 
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -100,7 +101,7 @@ fun HomeScreen(
                 tempo = state.tempo,
                 isPlay = state.isPlay,
                 readingMode = state.readingMode,
-                onReadingModeChange = state::updateReadingMode,
+                onReadingModeChange = onReadingModeChange,
                 onSeek = state::seek,
                 onPlay = state::setIsPlay,
                 onRewin = state::rewind,

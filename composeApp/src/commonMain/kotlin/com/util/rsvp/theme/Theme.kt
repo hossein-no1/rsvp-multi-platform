@@ -3,16 +3,18 @@ package com.util.rsvp.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun LocalTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    primary: Color,
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) {
-        DarkColorScheme
+        darkAppColorScheme(primary = primary)
     } else {
-        LightColorScheme
+        lightAppColorScheme(primary = primary)
     }
 
     MaterialTheme(

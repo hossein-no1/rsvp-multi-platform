@@ -29,14 +29,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.util.rsvp.extractTextFromPdf
+import com.util.rsvp.model.PdfHistoryItem
 import kotlinx.browser.document
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
+import kotlin.JsFun
+import kotlin.js.ExperimentalWasmJsInterop
 
 @Composable
 actual fun InputPDF(
     modifier: Modifier,
+    onPicked: (PdfHistoryItem) -> Unit,
     onResult: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -76,6 +80,13 @@ actual fun InputPDF(
                                 errorMessage = "Couldn’t read this PDF."
                                 successMessage = null
                             } else {
+                                onPicked(
+                                    PdfHistoryItem(
+                                        name = file.name,
+                                        uri = null,
+                                        addedAtEpochMs = nowEpochMs(),
+                                    )
+                                )
                                 onResult(text)
                                 successMessage = "File uploaded successfully."
                                 errorMessage = null
@@ -142,4 +153,10 @@ actual fun InputPDF(
         }
     }
 }
+
+@OptIn(ExperimentalWasmJsInterop::class)
+@JsFun("() => Date.now()")
+private external fun jsDateNow(): Double
+
+private fun nowEpochMs(): Long = jsDateNow().toLong()
 

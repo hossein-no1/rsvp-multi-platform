@@ -1,6 +1,7 @@
 package com.util.rsvp.component
 
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.util.rsvp.model.PdfHistoryItem
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
@@ -45,6 +47,7 @@ import kotlinx.coroutines.withContext
 @Composable
 actual fun InputPDF(
     modifier: Modifier,
+    onPicked: (PdfHistoryItem) -> Unit,
     onResult: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -81,6 +84,13 @@ actual fun InputPDF(
 
             pickedFileName = displayName ?: "Selected PDF"
 
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
+
             scope.launch {
                 val text = runCatching {
                     withContext(Dispatchers.IO) { context.extractTextFromPdf(uri) }
@@ -90,6 +100,13 @@ actual fun InputPDF(
                     errorMessage = "Couldn’t read this PDF."
                     successMessage = null
                 } else {
+                    onPicked(
+                        PdfHistoryItem(
+                            name = pickedFileName ?: (displayName ?: "Selected PDF"),
+                            uri = uri.toString(),
+                            addedAtEpochMs = System.currentTimeMillis(),
+                        )
+                    )
                     onResult(text)
                     successMessage = "File uploaded successfully."
                     errorMessage = null

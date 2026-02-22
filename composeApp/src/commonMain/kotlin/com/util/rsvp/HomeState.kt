@@ -104,6 +104,7 @@ class HomeState internal constructor(
 @Composable
 fun rememberHomeState(
     lorem: String = LOREM,
+    initialReadingMode: ReadingMode = ReadingMode.Focus,
 ): HomeState {
     val stack = remember(lorem) {
         lorem
@@ -112,6 +113,9 @@ fun rememberHomeState(
             .filter { it.isNotBlank() }
     }
     val state = remember(stack) { HomeState(stack = stack) }
+    LaunchedEffect(initialReadingMode) {
+        state.updateReadingMode(initialReadingMode)
+    }
 
     LaunchedEffect(key1 = state.isPlay) {
         if (state.offset >= state.count || !state.isPlay) return@LaunchedEffect

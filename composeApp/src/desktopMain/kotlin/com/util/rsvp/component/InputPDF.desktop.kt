@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.util.rsvp.model.PdfHistoryItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -39,6 +40,7 @@ import java.io.File
 @Composable
 actual fun InputPDF(
     modifier: Modifier,
+    onPicked: (PdfHistoryItem) -> Unit,
     onResult: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -84,6 +86,13 @@ actual fun InputPDF(
                             errorMessage = "Couldn’t read this PDF."
                             successMessage = null
                         } else {
+                            onPicked(
+                                PdfHistoryItem(
+                                    name = picked.name,
+                                    uri = picked.absolutePath,
+                                    addedAtEpochMs = System.currentTimeMillis(),
+                                )
+                            )
                             onResult(text)
                             successMessage = "File uploaded successfully."
                             errorMessage = null
