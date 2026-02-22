@@ -54,7 +54,12 @@ fun GateScreen(
             onValueChange = { text = it },
             minLines = 6,
             maxLines = 6,
-            label = { Text("Text to parse") },
+            label = {
+                Text(
+                    text = "Text to parse",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
             textStyle = MaterialTheme.typography.bodyMedium,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onBackground
@@ -70,7 +75,10 @@ fun GateScreen(
             enabled = text.isNotBlank(),
             onClick = { onContinue(text) },
         ) {
-            Text("Start")
+            Text(
+                text = "Start",
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
     }
 }

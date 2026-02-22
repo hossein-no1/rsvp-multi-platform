@@ -2,7 +2,6 @@ package com.util.rsvp.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +24,8 @@ import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -219,38 +220,44 @@ private fun Actions(
                 ),
                 verticalAlignment = Alignment.CenterVertically,
                 content = {
-                    Icon(
-                        modifier = Modifier
-                            .size(size = 32.dp)
-                            .clickable {
-                                onRewin()
-                            },
-                        imageVector = Icons.Rounded.FastRewind,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        contentDescription = ""
-                    )
+                    IconButton(
+                        onClick = onRewin,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(32.dp),
+                            imageVector = Icons.Rounded.FastRewind,
+                            contentDescription = "",
+                        )
+                    }
 
-                    Icon(
-                        modifier = Modifier
-                            .size(size = 32.dp)
-                            .clickable {
-                                onPlay(isPlay.not())
-                            },
-                        imageVector = if (isPlay) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                        tint = MaterialTheme.colorScheme.primary,
-                        contentDescription = ""
-                    )
+                    IconButton(
+                        onClick = { onPlay(isPlay.not()) },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(32.dp),
+                            imageVector = if (isPlay) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                            contentDescription = "",
+                        )
+                    }
 
-                    Icon(
-                        modifier = Modifier
-                            .size(size = 32.dp)
-                            .clickable {
-                                onForward()
-                            },
-                        imageVector = Icons.Rounded.FastForward,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        contentDescription = ""
-                    )
+                    IconButton(
+                        onClick = onForward,
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(32.dp),
+                            imageVector = Icons.Rounded.FastForward,
+                            contentDescription = "",
+                        )
+                    }
                 }
             )
         }
@@ -275,14 +282,18 @@ private fun Controller(
             Box(
                 modifier = Modifier.align(alignment = Alignment.CenterStart),
                 content = {
-                    Icon(
-                        modifier = Modifier
-                            .size(size = 24.dp)
-                            .clickable { tuneMenuExpanded = true },
-                        imageVector = Icons.Rounded.Tune,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        contentDescription = ""
-                    )
+                    IconButton(
+                        onClick = { tuneMenuExpanded = true },
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            imageVector = Icons.Rounded.Tune,
+                            contentDescription = "",
+                        )
+                    }
 
                     DropdownMenu(
                         expanded = tuneMenuExpanded,
@@ -356,27 +367,31 @@ private fun Metronome(
         ),
         verticalAlignment = Alignment.CenterVertically,
         content = {
-            Icon(
-                modifier = Modifier
-                    .size(size = 24.dp)
-                    .clickable {
-                        speedDown()
-                    },
-                imageVector = Icons.Rounded.Remove,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                contentDescription = ""
-            )
+            IconButton(
+                onClick = speedDown,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Rounded.Remove,
+                    contentDescription = "",
+                )
+            }
             MetronomeLabel(tempo = tempo)
-            Icon(
-                modifier = Modifier
-                    .size(size = 24.dp)
-                    .clickable {
-                        speedUp()
-                    },
-                imageVector = Icons.Rounded.Add,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                contentDescription = ""
-            )
+            IconButton(
+                onClick = speedUp,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = "",
+                )
+            }
         }
     )
 }

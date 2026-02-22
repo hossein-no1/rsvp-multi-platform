@@ -40,8 +40,8 @@ fun GuidedContent(
 ) {
     if (text.isEmpty()) return
 
-    val highlightColor = MaterialTheme.colorScheme.primary
-    val highlightBackground = highlightColor.copy(alpha = 0.18f)
+    val focusedTextColor = Color.White
+    val unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
 
     val textStyle = MaterialTheme.typography.bodyLarge.copy(
         fontSize = 18.sp,
@@ -51,7 +51,7 @@ fun GuidedContent(
     val safeStart = highlightStart.coerceIn(0, text.length)
     val safeEndExclusive = highlightEndExclusive.coerceIn(safeStart, text.length)
 
-    val annotated = remember(text, safeStart, safeEndExclusive, highlightColor, highlightBackground) {
+    val annotated = remember(text, safeStart, safeEndExclusive, focusedTextColor) {
         if (safeStart == safeEndExclusive) {
             AnnotatedString(text)
         } else {
@@ -60,8 +60,7 @@ fun GuidedContent(
                 spanStyles = listOf(
                     AnnotatedString.Range(
                         item = SpanStyle(
-                            color = highlightColor,
-                            background = highlightBackground,
+                            color = focusedTextColor,
                             fontWeight = FontWeight.SemiBold,
                         ),
                         start = safeStart,
@@ -141,7 +140,7 @@ fun GuidedContent(
                     .fillMaxWidth()
                     .verticalScroll(scrollState, enabled = false),
                 text = annotated,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = unfocusedTextColor,
                 style = textStyle,
                 onTextLayout = { textLayout = it },
             )
@@ -166,4 +165,3 @@ fun GuidedContent(
         }
     }
 }
-
