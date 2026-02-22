@@ -41,7 +41,13 @@ class AppDataStore internal constructor(
             current.pdfHistory
                 .asSequence()
                 .filterNot { it.uri != null && item.uri != null && it.uri == item.uri }
-                .filterNot { it.uri == null && item.uri == null && it.name == item.name }
+                .filterNot {
+                    it.uri == null && item.uri == null &&
+                        (
+                            (it.text.isNotBlank() && item.text.isNotBlank() && it.text == item.text) ||
+                                (it.text.isBlank() || item.text.isBlank()) && (it.name == item.name)
+                            )
+                }
                 .take(PDF_HISTORY_LIMIT - 1)
                 .forEach { add(it) }
         }

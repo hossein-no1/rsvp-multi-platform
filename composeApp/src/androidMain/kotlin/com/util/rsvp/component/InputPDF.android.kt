@@ -104,6 +104,7 @@ actual fun InputPDF(
                         PdfHistoryItem(
                             name = pickedFileName ?: (displayName ?: "Selected PDF"),
                             uri = uri.toString(),
+                            text = text,
                             addedAtEpochMs = System.currentTimeMillis(),
                         )
                     )

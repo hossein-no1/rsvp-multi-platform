@@ -90,6 +90,7 @@ actual fun InputPDF(
                                 PdfHistoryItem(
                                     name = picked.name,
                                     uri = picked.absolutePath,
+                                    text = text,
                                     addedAtEpochMs = System.currentTimeMillis(),
                                 )
                             )

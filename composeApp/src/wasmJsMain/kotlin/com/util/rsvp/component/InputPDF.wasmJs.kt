@@ -83,7 +83,8 @@ actual fun InputPDF(
                                 onPicked(
                                     PdfHistoryItem(
                                         name = file.name,
-                                        uri = null,
+                                        uri = "local:${file.name}",
+                                        text = text,
                                         addedAtEpochMs = nowEpochMs(),
                                     )
                                 )

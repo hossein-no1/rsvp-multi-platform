@@ -209,6 +209,14 @@ fun GateScreen(
                                                     } else {
                                                         urlText = result
                                                         urlState = UrlDownloadState.Success("Downloaded successfully.")
+                                                        onPdfPicked(
+                                                            PdfHistoryItem(
+                                                                name = "Link",
+                                                                uri = input,
+                                                                text = result,
+                                                                addedAtEpochMs = nowEpochMs(),
+                                                            )
+                                                        )
                                                     }
                                                 }
                                             },
@@ -226,7 +234,20 @@ fun GateScreen(
                             Button(
                                 modifier = Modifier.fillMaxWidth(),
                                 enabled = currentText.isNotBlank(),
-                                onClick = { onContinue(currentText) },
+                                onClick = {
+                                    if (selectedTabIndex == 2) {
+                                        onPdfPicked(
+                                            PdfHistoryItem(
+                                                name = "Paste",
+                                                uri = null,
+                                                text = pasteText,
+                                                preview = pasteText.singleLinePreview(),
+                                                addedAtEpochMs = nowEpochMs(),
+                                            )
+                                        )
+                                    }
+                                    onContinue(currentText)
+                                },
                                 shape = RoundedCornerShape(size = 8.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.onBackground,
@@ -337,6 +358,14 @@ private sealed interface UrlDownloadState {
     data object Loading : UrlDownloadState
     data class Success(val message: String) : UrlDownloadState
     data class Error(val message: String) : UrlDownloadState
+}
+
+private fun String.singleLinePreview(
+    maxChars: Int = 80,
+): String {
+    val single = lineSequence().joinToString(" ") { it.trim() }.trim().replace(Regex("\\s+"), " ")
+    if (single.length <= maxChars) return single
+    return single.take(maxChars).trimEnd() + "…"
 }
 
 @Composable

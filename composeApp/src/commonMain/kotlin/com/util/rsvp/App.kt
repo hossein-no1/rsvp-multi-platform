@@ -4,23 +4,28 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,29 +42,29 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.unit.sp
 import com.util.rsvp.datastore.DEFAULT_THEME_PRIMARY_ARGB
 import com.util.rsvp.datastore.rememberAppDataStore
 import com.util.rsvp.history.rememberPdfHistoryOpener
 import com.util.rsvp.model.PdfHistoryItem
+import com.util.rsvp.theme.LocalTheme
 import com.util.rsvp.theme.darkAppColorScheme
 import com.util.rsvp.theme.lightAppColorScheme
-import com.util.rsvp.theme.LocalTheme
-import kotlin.math.hypot
 import kotlinx.coroutines.launch
+import kotlin.math.hypot
 
 @Composable
 @Preview
@@ -305,7 +310,13 @@ private fun ThemeColorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Theme color") },
+        title = {
+            Text(
+                text = "Theme color",
+                style = MaterialTheme.typography.headlineSmall,
+                fontSize = 16.sp
+            )
+        },
         text = {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 presets.forEach { (name, argb) ->
@@ -318,7 +329,14 @@ private fun ThemeColorDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Close",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp
+                )
+            }
         },
     )
 }
@@ -336,58 +354,94 @@ private fun PdfHistoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("PDF history") },
+        title = {
+            Text(
+                text = "History",
+                style = MaterialTheme.typography.headlineSmall,
+                fontSize = 16.sp
+            )
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (history.isEmpty()) {
-                    Text("No PDFs yet.")
+                    Text(
+                        text = "No history yet.",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontSize = 14.sp
+                    )
                 } else {
                     history.forEach { item ->
+                        val hasSavedText = item.text.isNotBlank()
+                        val isHttp =
+                            item.uri?.startsWith("http://") == true || item.uri?.startsWith("https://") == true
+                        val detailLine = item.preview
+                            ?: item.uri
+                            ?: item.text.singleLinePreview()
+
                         val existsState by produceState<Boolean?>(initialValue = null, item) {
-                            value = runCatching { opener.exists(item) }.getOrDefault(false)
+                            value = when {
+                                hasSavedText -> true
+                                item.uri == null -> true
+                                isHttp -> true
+                                else -> runCatching { opener.exists(item) }.getOrDefault(false)
+                            }
                         }
-                        val missing = existsState == false
-                        val uriLine = item.uri ?: "(Not restorable)"
+                        val canOpen = hasSavedText || (existsState == true)
 
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.03f))
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Text(
-                                text = item.name,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = if (missing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                text = uriLine,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (missing) {
-                                    MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                TextButton(
-                                    enabled = (existsState == true),
-                                    onClick = {
-                                        scope.launch {
-                                            val text = runCatching { opener.openText(item) }.getOrNull().orEmpty()
-                                            if (text.isNotBlank()) onOpenText(text)
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable(enabled = canOpen) {
+                                        if (item.text.isNotBlank()) {
+                                            onOpenText(item.text)
+                                        } else {
+                                            scope.launch {
+                                                val text =
+                                                    runCatching { opener.openText(item) }.getOrNull()
+                                                        .orEmpty()
+                                                if (text.isNotBlank()) onOpenText(text)
+                                            }
                                         }
                                     },
-                                ) { Text("Open") }
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                            ) {
+                                Text(
+                                    text = item.name.ifBlank { "History item" },
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = if (canOpen) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    text = detailLine,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
 
-                                TextButton(onClick = { onRemove(item) }) { Text("Remove") }
+                            TextButton(
+                                onClick = { onRemove(item) },
+                                enabled = true,
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                ),
+                            ) {
+                                Text(
+                                    text = "Remove",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 14.sp
+                                )
                             }
                         }
                     }
@@ -397,12 +451,33 @@ private fun PdfHistoryDialog(
         confirmButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (history.isNotEmpty()) {
-                    TextButton(onClick = onClear) { Text("Clear") }
+                    TextButton(onClick = onClear) {
+                        Text(
+                            text = "Clear", style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
-                TextButton(onClick = onDismiss) { Text("Close") }
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Close",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp
+                    )
+                }
             }
         },
     )
+}
+
+private fun String.singleLinePreview(
+    maxChars: Int = 80,
+): String {
+    val single = lineSequence().joinToString(" ") { it.trim() }.trim().replace(Regex("\\s+"), " ")
+    if (single.length <= maxChars) return single
+    return single.take(maxChars).trimEnd() + "…"
 }
 
 private fun maxRevealRadiusPx(

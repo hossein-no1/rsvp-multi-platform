@@ -102,6 +102,7 @@ actual fun InputPDF(
                                         PdfHistoryItem(
                                             name = name ?: "Selected PDF",
                                             uri = url.absoluteString,
+                                            text = text,
                                             addedAtEpochMs = nowMs,
                                         )
                                     )
