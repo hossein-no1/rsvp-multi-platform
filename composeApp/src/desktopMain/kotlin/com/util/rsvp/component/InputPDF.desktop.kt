@@ -54,7 +54,7 @@ actual fun InputPDF(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(.5F)
+                .fillMaxWidth()
                 .clickable {
                     successMessage = null
                     errorMessage = null
@@ -100,7 +100,7 @@ actual fun InputPDF(
                     }
                 }
                 .drawBehind {
-                    val strokeWidth = 2.dp.toPx()
+                    val strokeWidth = 1.dp.toPx()
                     val cornerRadius = 8.dp.toPx()
 
                     drawRoundRect(
@@ -110,7 +110,7 @@ actual fun InputPDF(
                         style = Stroke(
                             width = strokeWidth,
                             pathEffect = PathEffect.dashPathEffect(
-                                floatArrayOf(10f, 6f)
+                                floatArrayOf(8f, 6f)
                             )
                         )
                     )
