@@ -12,8 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
-import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.util.rsvp.pdf.extractTextFromPdfUri
 import com.util.rsvp.model.PdfHistoryItem
 import com.util.rsvp.nowEpochMs
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +56,7 @@ actual fun rememberPdfImportController(
 
             scope.launch {
                 val text = runCatching {
-                    withContext(Dispatchers.IO) { context.extractTextFromPdf(uri) }
+                    withContext(Dispatchers.IO) { context.extractTextFromPdfUri(uri) }
                 }.getOrNull().orEmpty()
 
                 if (text.isBlank()) {
@@ -85,13 +84,6 @@ actual fun rememberPdfImportController(
         }
     }
 }
-
-private fun Context.extractTextFromPdf(uri: Uri): String? =
-    contentResolver.openInputStream(uri)?.use { input ->
-        PDDocument.load(input).use { doc ->
-            PDFTextStripper().getText(doc)
-        }
-    }
 
 private fun android.content.ContentResolver.displayName(uri: Uri): String? {
     val cursor: Cursor? = runCatching {

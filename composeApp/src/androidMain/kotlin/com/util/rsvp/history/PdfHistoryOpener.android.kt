@@ -6,8 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
-import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.util.rsvp.pdf.extractTextFromPdfUri
 import com.util.rsvp.model.PdfHistoryItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,11 +32,7 @@ private class AndroidPdfHistoryOpener(
         val raw = item.uri ?: return@withContext null
         val uri = runCatching { Uri.parse(raw) }.getOrNull() ?: return@withContext null
         runCatching {
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                PDDocument.load(input).use { doc ->
-                    PDFTextStripper().getText(doc)
-                }
-            }
+            context.extractTextFromPdfUri(uri)
         }.getOrNull()
     }
 }

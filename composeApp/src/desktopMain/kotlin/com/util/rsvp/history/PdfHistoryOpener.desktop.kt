@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import com.util.rsvp.model.PdfHistoryItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.pdfbox.io.MemoryUsageSetting
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 import java.io.File
@@ -24,7 +25,7 @@ private class DesktopPdfHistoryOpener : PdfHistoryOpener {
         val file = File(path)
         if (!file.exists() || !file.isFile) return@withContext null
         runCatching {
-            PDDocument.load(file).use { doc ->
+            PDDocument.load(file, MemoryUsageSetting.setupTempFileOnly()).use { doc ->
                 PDFTextStripper().getText(doc)
             }
         }.getOrNull()

@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.pdfbox.io.MemoryUsageSetting
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 import java.awt.FileDialog
@@ -97,7 +98,7 @@ actual fun rememberPdfTextDropListener(
 
 private fun extractTextFromPdf(file: File): String? {
     if (!file.exists() || !file.isFile) return null
-    return PDDocument.load(file).use { doc ->
+    return PDDocument.load(file, MemoryUsageSetting.setupTempFileOnly()).use { doc ->
         PDFTextStripper().getText(doc)
     }
 }

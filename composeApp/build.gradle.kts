@@ -1,6 +1,17 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
+import java.io.File
+import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -76,6 +87,70 @@ kotlin {
     }
 }
 
+abstract class GenerateMacIcns @Inject constructor(
+    private val execOps: ExecOperations,
+) : DefaultTask() {
+    @get:InputFile
+    abstract val inputPng: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val iconsetDir: DirectoryProperty
+
+    @get:OutputFile
+    abstract val outputIcns: RegularFileProperty
+
+    @TaskAction
+    fun run() {
+        val isMac = System.getProperty("os.name").contains("Mac", ignoreCase = true)
+        if (!isMac) return
+
+        val input = inputPng.get().asFile
+        if (!input.exists()) error("Missing icon source png: ${input.absolutePath}")
+
+        val iconset = iconsetDir.get().asFile
+        iconset.deleteRecursively()
+        iconset.mkdirs()
+
+        fun sips(size: Int, outName: String) {
+            execOps.exec {
+                commandLine(
+                    "sips",
+                    "-z", size.toString(), size.toString(),
+                    input.absolutePath,
+                    "--out", File(iconset, outName).absolutePath,
+                )
+            }
+        }
+
+        // Required macOS iconset sizes.
+        sips(16, "icon_16x16.png")
+        sips(32, "icon_16x16@2x.png")
+        sips(32, "icon_32x32.png")
+        sips(64, "icon_32x32@2x.png")
+        sips(128, "icon_128x128.png")
+        sips(256, "icon_128x128@2x.png")
+        sips(256, "icon_256x256.png")
+        sips(512, "icon_256x256@2x.png")
+        sips(512, "icon_512x512.png")
+        sips(1024, "icon_512x512@2x.png")
+
+        execOps.exec {
+            commandLine(
+                "iconutil",
+                "-c", "icns",
+                iconset.absolutePath,
+                "-o", outputIcns.get().asFile.absolutePath,
+            )
+        }
+    }
+}
+
+val generateMacIcns by tasks.registering(GenerateMacIcns::class) {
+    inputPng.set(layout.projectDirectory.file("src/commonMain/composeResources/drawable/rapid_reader_logo.png"))
+    iconsetDir.set(layout.buildDirectory.dir("generated/macos/RapidReader.iconset"))
+    outputIcns.set(layout.buildDirectory.file("generated/macos/RapidReader.icns"))
+}
+
 compose.desktop {
     application {
         mainClass = "com.util.rsvp.MainKt"
@@ -88,8 +163,19 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "RapidReader"
             packageVersion = "1.0.0"
+
+            macOS {
+                // Fix DMG/.app name + icon on macOS (jpackage expects .icns).
+                iconFile.set(generateMacIcns.flatMap { it.outputIcns })
+                bundleID = "com.util.rsvp"
+            }
         }
     }
+}
+
+// Ensure jpackage tasks have the generated .icns available.
+tasks.withType<AbstractJPackageTask>().configureEach {
+    dependsOn(generateMacIcns)
 }
 
 android {

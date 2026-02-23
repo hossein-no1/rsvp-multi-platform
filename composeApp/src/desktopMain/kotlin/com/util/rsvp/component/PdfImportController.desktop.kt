@@ -8,6 +8,7 @@ import com.util.rsvp.nowEpochMs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.pdfbox.io.MemoryUsageSetting
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 import java.awt.FileDialog
@@ -23,7 +24,12 @@ actual fun rememberPdfImportController(
 
     return remember(onPicked, onResult, onError) {
         object : PdfImportController {
+            private var dialogOpen = false
+
             override fun launch() {
+                if (dialogOpen) return
+                dialogOpen = true
+
                 val dialog = FileDialog(
                     null as java.awt.Frame?,
                     "Select PDF",
@@ -34,30 +40,41 @@ actual fun rememberPdfImportController(
                     isVisible = true
                 }
 
-                val dir = dialog.directory ?: return
-                val fileName = dialog.file ?: return
+                val dir = dialog.directory
+                val fileName = dialog.file
+
+                if (dir == null || fileName == null) {
+                    dialogOpen = false
+                    onError("Canceled.")
+                    return
+                }
                 val picked = File(dir, fileName)
 
                 if (!picked.extension.equals("pdf", ignoreCase = true)) {
+                    dialogOpen = false
                     onError("Please pick a .pdf file.")
                     return
                 }
 
                 scope.launch {
-                    val text = withContext(Dispatchers.IO) { extractTextFromPdf(picked) }.orEmpty()
-                    if (text.isBlank()) {
-                        onError("Couldn’t read this PDF.")
-                        return@launch
-                    }
+                    try {
+                        val text = withContext(Dispatchers.IO) { extractTextFromPdf(picked) }.orEmpty()
+                        if (text.isBlank()) {
+                            onError("Couldn’t read this PDF.")
+                            return@launch
+                        }
 
-                    val item = PdfHistoryItem(
-                        name = picked.name,
-                        uri = picked.absolutePath,
-                        text = text,
-                        addedAtEpochMs = nowEpochMs(),
-                    )
-                    onPicked(item)
-                    onResult(text)
+                        val item = PdfHistoryItem(
+                            name = picked.name,
+                            uri = picked.absolutePath,
+                            text = text,
+                            addedAtEpochMs = nowEpochMs(),
+                        )
+                        onPicked(item)
+                        onResult(text)
+                    } finally {
+                        dialogOpen = false
+                    }
                 }
             }
         }
@@ -67,7 +84,7 @@ actual fun rememberPdfImportController(
 private fun extractTextFromPdf(file: File): String? {
     if (!file.exists() || !file.isFile) return null
     if (!file.extension.equals("pdf", ignoreCase = true)) return null
-    return PDDocument.load(file).use { doc ->
+    return PDDocument.load(file, MemoryUsageSetting.setupTempFileOnly()).use { doc ->
         PDFTextStripper().getText(doc)
     }
 }
