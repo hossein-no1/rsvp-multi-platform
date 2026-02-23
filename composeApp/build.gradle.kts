@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.gradle.api.DefaultTask
+import com.util.rsvp.gradle.ExportDesktopInstallerTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputFile
@@ -20,6 +21,9 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
+
+val desktopPackageName = "RapidReader"
+val desktopPackageVersion = "1.0.0"
 
 kotlin {
     androidTarget {
@@ -161,8 +165,8 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "RapidReader"
-            packageVersion = "1.0.0"
+            packageName = desktopPackageName
+            packageVersion = desktopPackageVersion
 
             macOS {
                 // Fix DMG/.app name + icon on macOS (jpackage expects .icns).
@@ -176,6 +180,68 @@ compose.desktop {
 // Ensure jpackage tasks have the generated .icns available.
 tasks.withType<AbstractJPackageTask>().configureEach {
     dependsOn(generateMacIcns)
+}
+
+val dmgPackagingTaskCandidates = listOf("packageDmg", "packageReleaseDmg")
+val msiPackagingTaskCandidates = listOf("packageMsi", "packageReleaseMsi")
+val debPackagingTaskCandidates = listOf("packageDeb", "packageReleaseDeb")
+
+val desktopBinariesDir = layout.buildDirectory.dir("compose/binaries")
+val desktopDistDir = rootProject.layout.projectDirectory.dir("dist/desktop")
+
+tasks.register<ExportDesktopInstallerTask>("exportDesktopMac") {
+    group = "distribution"
+    description = "Build DMG and copy to dist/desktop"
+
+    requiredOsSubstring.set("Mac")
+    installerExtension.set("dmg")
+    outputFileName.set("${desktopPackageName}-${desktopPackageVersion}-mac.dmg")
+    packagingTaskCandidates.set(dmgPackagingTaskCandidates)
+    binariesDir.set(desktopBinariesDir)
+    distDir.set(desktopDistDir)
+
+    dmgPackagingTaskCandidates.firstOrNull { tasks.findByName(it) != null }?.let { dependsOn(it) }
+}
+
+tasks.register<ExportDesktopInstallerTask>("exportDesktopWindows") {
+    group = "distribution"
+    description = "Build MSI and copy to dist/desktop"
+
+    requiredOsSubstring.set("Windows")
+    installerExtension.set("msi")
+    outputFileName.set("${desktopPackageName}-${desktopPackageVersion}-windows.msi")
+    packagingTaskCandidates.set(msiPackagingTaskCandidates)
+    binariesDir.set(desktopBinariesDir)
+    distDir.set(desktopDistDir)
+
+    msiPackagingTaskCandidates.firstOrNull { tasks.findByName(it) != null }?.let { dependsOn(it) }
+}
+
+tasks.register<ExportDesktopInstallerTask>("exportDesktopLinux") {
+    group = "distribution"
+    description = "Build DEB and copy to dist/desktop"
+
+    requiredOsSubstring.set("Linux")
+    installerExtension.set("deb")
+    outputFileName.set("${desktopPackageName}-${desktopPackageVersion}-linux.deb")
+    packagingTaskCandidates.set(debPackagingTaskCandidates)
+    binariesDir.set(desktopBinariesDir)
+    distDir.set(desktopDistDir)
+
+    debPackagingTaskCandidates.firstOrNull { tasks.findByName(it) != null }?.let { dependsOn(it) }
+}
+
+tasks.register("exportDesktopCurrentOs") {
+    group = "distribution"
+    description = "Build and export the installer for the current OS"
+
+    val osName = System.getProperty("os.name").lowercase()
+    when {
+        osName.contains("mac") -> dependsOn("exportDesktopMac")
+        osName.contains("win") -> dependsOn("exportDesktopWindows")
+        osName.contains("linux") -> dependsOn("exportDesktopLinux")
+        else -> error("Unsupported OS for desktop packaging: ${System.getProperty("os.name")}")
+    }
 }
 
 android {
