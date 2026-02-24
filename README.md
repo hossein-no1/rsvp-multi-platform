@@ -1,6 +1,6 @@
 ## Links
 
-- **Web** [visi](https://rapidreader-web.pages.dev/)
+- **Web** [visit](https://rapidreader-web.pages.dev/)
 - **macOS (DMG)** [download file](https://mega.nz/file/77J1RahB#0bZg94bYqWBQYczDv6FqbvEXdLfJpZM3MGrGobalpDM)
 
 ## 1) Intro
